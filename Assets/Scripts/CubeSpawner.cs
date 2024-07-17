@@ -12,8 +12,7 @@ public class CubeSpawner : MonoBehaviour
     [SerializeField] private int _poolMaxSize = 30;        
 
     private Vector3 _startPoint;    
-    private ObjectPool<Cube> _pool;
-    private Coroutine _coroutine;
+    private ObjectPool<Cube> _pool;    
 
     private void Awake()
     {                
@@ -22,8 +21,8 @@ public class CubeSpawner : MonoBehaviour
 
         _pool = new ObjectPool<Cube>(
             createFunc: () => Instantiate(_prefab),
-            actionOnGet: (cube) => PerformActionOnGet(cube),
-            actionOnRelease: (cube) => PerformActionOnRelease(cube),
+            actionOnGet: (cube) => EnableCube(cube),
+            actionOnRelease: (cube) => DisableCube(cube),
             actionOnDestroy: (cube) => Destroy(cube),
             collectionCheck: true,
             defaultCapacity: _poolCapacity,
@@ -31,15 +30,9 @@ public class CubeSpawner : MonoBehaviour
     }
 
     private void Start()
-    {        
-        _coroutine = StartCoroutine(RepeatGetCube(_repeatRate));        
-    }
-
-    private void OnDisable()
-    {
-        if (_coroutine != null)        
-            StopCoroutine(_coroutine);       
-    }
+    {         
+        StartCoroutine(RepeatGetCube(_repeatRate));        
+    }    
 
     private IEnumerator RepeatGetCube(float repeatRate)
     {
@@ -52,7 +45,7 @@ public class CubeSpawner : MonoBehaviour
         }
     }
 
-    private void PerformActionOnGet(Cube cube)
+    private void EnableCube(Cube cube)
     {
         SetSpawnPoint(cube);
 
@@ -72,7 +65,7 @@ public class CubeSpawner : MonoBehaviour
         cube.transform.position = new Vector3(Random.Range(-sidestepX, sidestepX), _startPoint.y, Random.Range(-sidestepZ, sidestepZ));  
     }
 
-    private void PerformActionOnRelease(Cube cube)
+    private void DisableCube(Cube cube)
     {
         cube.gameObject.SetActive(false);        
 

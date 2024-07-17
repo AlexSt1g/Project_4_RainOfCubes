@@ -11,39 +11,41 @@ public class Cube : MonoBehaviour
 
     private readonly int _minLifetime = 2;
     private readonly int _maxLifetime = 5;    
-    private bool _hasBeenCollided;
-    private Coroutine _coroutine;
+    private bool _hasBeenCollided;    
+    private Renderer _renderer;
 
     public event UnityAction<Cube> LifetimeEnded;
 
-    private void OnEnable()
+    private void Awake()
     {
-        GetComponent<Renderer>().material = _defaultMaterial;
+        _renderer = GetComponent<Renderer>();
+    }
+
+    private void OnEnable()
+    {        
+        _renderer.material = _defaultMaterial;
     }
 
     private void OnDisable()
     {
         _hasBeenCollided = false;
-
-        if (_coroutine != null)
-            StopCoroutine(_coroutine);
     }
 
     private void Update()
     {
         if (transform.position.y < _minHeightForLiving)
-            LifetimeEnded?.Invoke(GetComponent<Cube>());
+            LifetimeEnded?.Invoke(this);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
         if (_hasBeenCollided == false)
         {
-            if (collision.gameObject.GetComponent<ColliderHolder>())
+            if (collision.gameObject.GetComponent<Platform>())
             {
-                GetComponent<Renderer>().material = _triggeredMaterial;
-
-                _coroutine = StartCoroutine(WaitLifetime(GetLifetime()));
+                _renderer.material = _triggeredMaterial;
+                
+                StartCoroutine(WaitLifetime(GetLifetime()));
 
                 _hasBeenCollided = true;
             }
@@ -53,8 +55,8 @@ public class Cube : MonoBehaviour
     private IEnumerator WaitLifetime(int lifetime)
     {
         yield return new WaitForSeconds(lifetime);
-
-        LifetimeEnded?.Invoke(GetComponent<Cube>());
+        
+        LifetimeEnded?.Invoke(this);
     }
 
     private int GetLifetime()
