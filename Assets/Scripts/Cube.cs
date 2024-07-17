@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
+[RequireComponent(typeof(Renderer))]
 public class Cube : MonoBehaviour
 {
     [SerializeField] private Material _defaultMaterial;
@@ -10,7 +11,7 @@ public class Cube : MonoBehaviour
 
     private readonly int _minLifetime = 2;
     private readonly int _maxLifetime = 5;    
-    private bool _hasFallen;
+    private bool _hasBeenCollided;
     private Coroutine _coroutine;
 
     public event UnityAction<Cube> LifetimeEnded;
@@ -22,7 +23,7 @@ public class Cube : MonoBehaviour
 
     private void OnDisable()
     {
-        _hasFallen = false;
+        _hasBeenCollided = false;
 
         if (_coroutine != null)
             StopCoroutine(_coroutine);
@@ -36,15 +37,15 @@ public class Cube : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (_hasFallen == false)
+        if (_hasBeenCollided == false)
         {
-            if (collision.gameObject.GetComponent<CollisionDetector>())
+            if (collision.gameObject.GetComponent<ColliderHolder>())
             {
                 GetComponent<Renderer>().material = _triggeredMaterial;
 
                 _coroutine = StartCoroutine(WaitLifetime(GetLifetime()));
 
-                _hasFallen = true;
+                _hasBeenCollided = true;
             }
         }
     }

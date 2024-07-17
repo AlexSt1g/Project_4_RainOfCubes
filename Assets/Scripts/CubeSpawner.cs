@@ -1,9 +1,10 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
 
-public class CubeSpawnerPool : MonoBehaviour
+public class CubeSpawner : MonoBehaviour
 {
-    [SerializeField] private GameObject _floor;
+    [SerializeField] private Transform _floor;    
     [SerializeField] private float _startPointHeight = 50f;
     [SerializeField] private Cube _prefab;
     [SerializeField] private float _repeatRate = 0.2f;
@@ -11,7 +12,8 @@ public class CubeSpawnerPool : MonoBehaviour
     [SerializeField] private int _poolMaxSize = 30;        
 
     private Vector3 _startPoint;    
-    private ObjectPool<Cube> _pool;         
+    private ObjectPool<Cube> _pool;
+    private Coroutine _coroutine;
 
     private void Awake()
     {                
@@ -19,21 +21,38 @@ public class CubeSpawnerPool : MonoBehaviour
         _startPoint.y += _startPointHeight;
 
         _pool = new ObjectPool<Cube>(
-        createFunc: () => Instantiate(_prefab),
-        actionOnGet: (cube) => ActionOnGet(cube),
-        actionOnRelease: (cube) => ActionOnRelease(cube),
-        actionOnDestroy: (cube) => Destroy(cube),
-        collectionCheck: true,
-        defaultCapacity: _poolCapacity,
-        maxSize: _poolMaxSize);
+            createFunc: () => Instantiate(_prefab),
+            actionOnGet: (cube) => PerformActionOnGet(cube),
+            actionOnRelease: (cube) => PerformActionOnRelease(cube),
+            actionOnDestroy: (cube) => Destroy(cube),
+            collectionCheck: true,
+            defaultCapacity: _poolCapacity,
+            maxSize: _poolMaxSize);
     }
 
     private void Start()
-    {
-        InvokeRepeating(nameof(GetCube), 0.0f, _repeatRate);
+    {        
+        _coroutine = StartCoroutine(RepeatGetCube(_repeatRate));        
     }
 
-    private void ActionOnGet(Cube cube)
+    private void OnDisable()
+    {
+        if (_coroutine != null)        
+            StopCoroutine(_coroutine);       
+    }
+
+    private IEnumerator RepeatGetCube(float repeatRate)
+    {
+        var wait = new WaitForSeconds(repeatRate);
+
+        while (enabled)
+        {
+            GetCube();
+            yield return wait;
+        }
+    }
+
+    private void PerformActionOnGet(Cube cube)
     {
         SetSpawnPoint(cube);
 
@@ -53,7 +72,7 @@ public class CubeSpawnerPool : MonoBehaviour
         cube.transform.position = new Vector3(Random.Range(-sidestepX, sidestepX), _startPoint.y, Random.Range(-sidestepZ, sidestepZ));  
     }
 
-    private void ActionOnRelease(Cube cube)
+    private void PerformActionOnRelease(Cube cube)
     {
         cube.gameObject.SetActive(false);        
 

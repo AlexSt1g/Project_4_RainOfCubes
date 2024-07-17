@@ -243,7 +243,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ba73a3241a23d841a9aa33e6a58ff34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _floor: {fileID: 442733811}
+  _floor: {fileID: 442733815}
   _startPointHeight: 50
   _prefab: {fileID: -2852231945926376087, guid: 971b7b604558b1e4d80f1812000acc8a, type: 3}
   _repeatRate: 0.2
